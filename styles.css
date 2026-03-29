@@ -1,0 +1,221 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+:root {
+    --primary-cyan: #00f2ff;
+    --text-main: #a0a0c0;
+    --bg-dark: #020205;
+    --card-glass: rgba(255, 255, 255, 0.03);
+    --border-glass: rgba(255, 255, 255, 0.1);
+    --transition-speed: 0.4s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, #1a1a2e 0%, var(--bg-dark) 100%);
+    overflow: hidden;
+}
+
+/* Container de Perspectiva */
+.parent {
+    width: 320px;
+    height: 350px;
+    perspective: 1200px;
+}
+
+/* O Card Principal */
+.card {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    background: var(--card-glass);
+    border: 1px solid var(--border-glass);
+    border-radius: 20px;
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    /* Corte futurista no canto superior direito */
+    clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
+    cursor: pointer;
+    transition: transform var(--transition-speed) ease-out, box-shadow var(--transition-speed);
+    transform-style: preserve-3d;
+}
+
+/* Efeito de scanline ou grid de fundo no card */
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%,
+            rgba(0, 0, 0, 0.1) 50%);
+    background-size: 100% 4px;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.2;
+}
+
+.glass {
+    position: absolute;
+    inset: 8px;
+    /* Unindo os raios de borda: o 100% cria aquela curva orgânica no topo */
+    border-radius: 55px;
+    border-top-right-radius: 100%;
+
+    /* Corrigindo para rgb e usando transparência sutil */
+    border-left: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+
+    /* Background com o gradiente que você curtiu */
+    background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+    /* Propriedades de 3D e Transição */
+    transform-style: preserve-3d;
+    transform: translate3d(0, 0, 25px);
+    transition: all 0.5s ease-in-out;
+    pointer-events: none;
+    /* Garante que o vidro não atrapalhe o clique nos botões */
+}
+
+/* HUD Redesenhado (Mais sutil) */
+.hud-container {
+    position: absolute;
+    top: 15px;
+    right: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+    transform: translate3d(0, 0, 40px);
+}
+
+/* Uma linha tecnológica sutil */
+.hud-line {
+    width: 40px;
+    height: 2px;
+    background: var(--primary-cyan);
+    box-shadow: 0 0 10px var(--primary-cyan);
+}
+
+.hud-hex {
+    font-size: 8px;
+    color: var(--primary-cyan);
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.hud-hex::before {
+    content: "SYS_ACTIVE // 092";
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 0.4;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.4;
+    }
+}
+
+/* Conteúdo Central */
+.content {
+    padding: 100px 30px 0;
+    transform: translate3d(0, 0, 30px);
+}
+
+.content .title {
+    display: block;
+    color: var(--primary-cyan);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+    font-size: 22px;
+    margin-bottom: 10px;
+}
+
+.content .text {
+    display: block;
+    color: var(--text-main);
+    line-height: 1.6;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-top: 10px;
+    max-width: 85%;
+    opacity: 0.8;
+}
+
+/* Rodapé e Botões */
+.bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    right: 25px;
+    padding: 10px 12px;
+    transform-style: preserve-3d;
+    transform: translate3d(0, 0, 50px);
+}
+
+.social-buttons-container {
+    display: flex;
+    gap: 12px;
+}
+
+.social-button {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1px solid var(--border-glass);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    display: grid;
+    place-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.social-button:hover {
+    background: var(--primary-cyan);
+    color: var(--bg-dark);
+    box-shadow: 0 0 15px var(--primary-cyan);
+    transform: translateY(-3px);
+}
+
+.view-more {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--primary-cyan);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.view-more-button {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+}
+
+/* Efeito de Hover no Card (Perspectiva Básica) */
+.parent:hover .card {
+    transform: rotateX(10deg) rotateY(-15deg);
+    box-shadow: -20px 20px 50px rgba(0, 0, 0, 0.5);
+}

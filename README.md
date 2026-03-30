@@ -13,8 +13,9 @@ Projeto desenvolvido para explorar conceitos avançados de **CSS 3D**, **Glassmo
 - **Google Fonts** (Poppins)
 
 ## 🚀 O Desafio (Diário de Bordo)
-- **Dia 1:** Refatoração completa da estrutura do tutorial para um design autoral (Cyberpunk/Tech). Implementação de variáveis CSS e redesenho do HUD.
-- **Dia 2 (Next):** Implementação de Iluminação Dinâmica via JavaScript.
+- **Dia 1:** Refatoração completa da estrutura para design autoral (Cyberpunk/Tech). Implementação de variáveis CSS e redesenho do HUD.
+- **Dia 2:** Implementação de lógica matemática para rotação 3D baseada na posição do cursor. Adaptação para eventos de Touch (Mobile/Tablet) e sistema de reset suave ao finalizar a interação.
+- **Dia 3 (Next):** Refino do Glassmorphism e implementação de iluminação dinâmica (Glare Effect).
 
 ## 🎨 Design Decisions
 - **Estética:** Dark Mode com acentos em Ciano Neon.

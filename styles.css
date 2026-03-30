@@ -6,7 +6,9 @@
     --bg-dark: #020205;
     --card-glass: rgba(255, 255, 255, 0.03);
     --border-glass: rgba(255, 255, 255, 0.1);
+    --transition-speed-faster: 0.1s;
     --transition-speed: 0.4s;
+    --transition-speed-slow: 0.5s;
 }
 
 * {
@@ -30,6 +32,10 @@ body {
     width: 320px;
     height: 350px;
     perspective: 1200px;
+}
+
+.parent:not(:hover) .card {
+    transition: transform var(--transition-speed-slow) ease;
 }
 
 /* O Card Principal */
@@ -68,14 +74,9 @@ body {
     /* Unindo os raios de borda: o 100% cria aquela curva orgânica no topo */
     border-radius: 55px;
     border-top-right-radius: 100%;
-
-    /* Corrigindo para rgb e usando transparência sutil */
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-
-    /* Background com o gradiente que você curtiu */
     background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-
     /* Propriedades de 3D e Transição */
     transform-style: preserve-3d;
     transform: translate3d(0, 0, 25px);

@@ -34,11 +34,7 @@ body {
     perspective: 1200px;
 }
 
-.parent:not(:hover) .card {
-    transition: transform var(--transition-speed-slow) ease;
-}
-
-/* O Card Principal */
+/* O Card Principal - recebe o transform 3D */
 .card {
     position: relative;
     height: 100%;
@@ -48,11 +44,14 @@ body {
     border-radius: 20px;
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    /* Corte futurista no canto superior direito */
+    /* MANTÉM o clip-path no card */
     clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
     cursor: pointer;
     transition: transform var(--transition-speed) ease-out, box-shadow var(--transition-speed);
     transform-style: preserve-3d;
+    z-index: 1;
+    /* IMPORTANTE: esconde o que transborda para manter as bordas */
+    overflow: hidden;
 }
 
 /* Efeito de scanline ou grid de fundo no card */
@@ -60,8 +59,7 @@ body {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%,
-            rgba(0, 0, 0, 0.1) 50%);
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
     background-size: 100% 4px;
     z-index: 1;
     pointer-events: none;
@@ -71,18 +69,31 @@ body {
 .glass {
     position: absolute;
     inset: 8px;
-    /* Unindo os raios de borda: o 100% cria aquela curva orgânica no topo */
     border-radius: 55px;
     border-top-right-radius: 100%;
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    /* Propriedades de 3D e Transição */
     transform-style: preserve-3d;
-    transform: translate3d(0, 0, 25px);
+    transform: translate3d(0, 0, 20px);
     transition: all 0.5s ease-in-out;
     pointer-events: none;
-    /* Garante que o vidro não atrapalhe o clique nos botões */
+    z-index: 2;
+}
+
+.glare {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 2;
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.parent:hover .glare {
+    opacity: 1;
 }
 
 /* HUD Redesenhado (Mais sutil) */
@@ -97,7 +108,6 @@ body {
     transform: translate3d(0, 0, 40px);
 }
 
-/* Uma linha tecnológica sutil */
 .hud-line {
     width: 40px;
     height: 2px;
@@ -117,24 +127,13 @@ body {
     content: "SYS_ACTIVE // 092";
 }
 
-@keyframes pulse {
-    0% {
-        opacity: 0.4;
-    }
-
-    50% {
-        opacity: 1;
-    }
-
-    100% {
-        opacity: 0.4;
-    }
-}
-
 /* Conteúdo Central */
 .content {
     padding: 100px 30px 0;
+    transform-style: preserve-3d;
+    pointer-events: none;
     transform: translate3d(0, 0, 30px);
+    z-index: 3;
 }
 
 .content .title {
@@ -152,13 +151,12 @@ body {
     color: var(--text-main);
     line-height: 1.6;
     font-size: 14px;
-    line-height: 1.5;
     margin-top: 10px;
     max-width: 85%;
     opacity: 0.8;
 }
 
-/* Rodapé e Botões */
+/* Rodapé e Botões - DENTRO do 3D mas SEM transform no container */
 .bottom {
     display: flex;
     align-items: center;
@@ -169,7 +167,8 @@ body {
     right: 25px;
     padding: 10px 12px;
     transform-style: preserve-3d;
-    transform: translate3d(0, 0, 50px);
+    /* REMOVIDO: transform: translate3d(0, 0, 60px); */
+    z-index: 10;
 }
 
 .social-buttons-container {
@@ -187,14 +186,19 @@ body {
     display: grid;
     place-content: center;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 15;
+    transform-style: preserve-3d;
+    /* APLICADO AQUI: traz cada botão pra frente individualmente */
+    transform: translate3d(0, 0, 60px);
 }
 
 .social-button:hover {
     background: var(--primary-cyan);
     color: var(--bg-dark);
     box-shadow: 0 0 15px var(--primary-cyan);
-    transform: translateY(-3px);
+    transform: translate3d(0, 0, 70px) scale(1.1); /* Z maior no hover */
 }
 
 .view-more {
@@ -205,6 +209,8 @@ body {
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
+    /* Aplicar translateZ aqui também pra manter consistência 3D */
+    transform: translate3d(0, 0, 60px);
 }
 
 .view-more-button {
@@ -213,10 +219,14 @@ body {
     color: inherit;
     font: inherit;
     cursor: pointer;
+    transition: all 0.3s ease;
 }
 
-/* Efeito de Hover no Card (Perspectiva Básica) */
-.parent:hover .card {
-    transform: rotateX(10deg) rotateY(-15deg);
-    box-shadow: -20px 20px 50px rgba(0, 0, 0, 0.5);
+.view-more-button:hover {
+    text-shadow: 0 0 10px var(--primary-cyan);
+}
+
+.view-more:hover .icon {
+    transform: translateY(3px);
+    transition: transform 0.3s ease;
 }

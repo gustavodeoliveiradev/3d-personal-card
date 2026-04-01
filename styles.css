@@ -47,11 +47,13 @@ body {
     /* MANTÉM o clip-path no card */
     clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
     cursor: pointer;
-    transition: transform 0.4s ease-out, border-color 0.3s ease; /* Suaviza a volta da luz */
+    transition: transform 0.4s ease-out, border-color 0.3s ease;
+    /* Suaviza a volta da luz */
     transform-style: preserve-3d;
     z-index: 1;
     /* IMPORTANTE: esconde o que transborda para manter as bordas */
     overflow: hidden;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Efeito de scanline ou grid de fundo no card */
@@ -144,6 +146,7 @@ body {
     font-weight: 700;
     font-size: 22px;
     margin-bottom: 10px;
+    user-select: none;
 }
 
 .content .text {
@@ -154,9 +157,11 @@ body {
     margin-top: 10px;
     max-width: 85%;
     opacity: 0.8;
+    user-select: none;
 }
 
-.title, .text {
+.title,
+.text {
     transition: transform 0.1s ease-out;
 }
 
@@ -202,7 +207,8 @@ body {
     background: var(--primary-cyan);
     color: var(--bg-dark);
     box-shadow: 0 0 15px var(--primary-cyan);
-    transform: translate3d(0, 0, 70px) scale(1.1); /* Z maior no hover */
+    transform: translate3d(0, 0, 70px) scale(1.1);
+    /* Z maior no hover */
 }
 
 .view-more {

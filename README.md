@@ -10,34 +10,33 @@ Projeto de interface de alto impacto visual que explora conceitos avançados de 
 
 ## 🛠️ Tecnologias e Conceitos
 - **HTML5:** Estrutura semântica com foco em acessibilidade.
-- **CSS3 Moderno:** 
-  - `Perspective` & `preserve-3d` para profundidade real.
+- **CSS3 Moderno:** - `Perspective` & `preserve-3d` para profundidade real.
   - `Clip-path` para cortes geométricos futuristas.
-  - Custom Properties (Variáveis) para fácil manutenção de temas.
-- **Vanilla JavaScript:** Lógica matemática para cálculo de eixos e manipulação de eventos de ponteiro.
+  - Custom Properties (Variáveis) para manipulação dinâmica de iluminação.
+- **Vanilla JavaScript:** Lógica matemática para cálculo de eixos e manipulação de estados via CSS Variables.
 - **Glassmorphism:** Efeito de vidro com `backdrop-filter` e bordas orgânicas.
 
 ## 🧠 Desafios Técnicos & Soluções (Deep Dive)
 
 ### 1. O Problema do "Clique Fantasma" no 3D
-**Desafio:** Ao aplicar múltiplas camadas 3D (`glass`, `glare`, `content`), os botões sociais pararam de funcionar porque elementos decorativos transparentes estavam "fisicamente" na frente deles no eixo Z, bloqueando o mouse.
-**Solução:** Implementamos uma hierarquia de `pointer-events: none` em camadas decorativas e isolamos o `translate3d` diretamente nos botões, retirando a transformação do container pai para garantir que o navegador priorizasse o clique na camada correta.
+**Desafio:** Elementos decorativos transparentes bloqueavam a interação com os botões sociais no eixo Z.
+**Solução:** Implementação de `pointer-events: none` em camadas visuais e isolamento do `translate3d` nos botões para garantir prioridade de clique no DOM.
 
-### 2. Matemática de Perspectiva
-**Desafio:** Criar uma rotação que parecesse natural e não "quebrasse" o card.
-**Solução:** Cálculo de percentual relativo ao centro do card:
-- $RotateX = (Y_{pct} * -30)$
-- $RotateY = (X_{pct} * 30)$
-Isso garante que o card se incline "em direção" ao cursor, aumentando a imersão.
+### 2. Edge Lighting Dinâmico (Iluminação de Borda)
+**Desafio:** O card parecia "morto" nas extremidades durante a inclinação.
+**Solução:** Criamos uma variável CSS `--dynamic-border` controlada por `Math.abs()` no JS. Isso permite que a borda "acenda" em neon ciano proporcionalmente à intensidade da inclinação, simulando reflexo de luz física nas bordas do vidro.
 
-### 3. Interação Híbrida (Mouse + Touch)
-**Desafio:** O efeito funcionava apenas no Desktop.
-**Solução:** Implementação de `touchmove` com `preventDefault` para evitar o scroll da página enquanto o usuário interage com o card no mobile, garantindo paridade de experiência.
+### 3. Parallax de Camadas Internas
+**Desafio:** Elementos internos (texto e título) movendo-se em bloco único quebravam a ilusão de profundidade.
+**Solução:** Aplicação de multiplicadores de deslocamento diferentes para cada elemento no JS. O título flutua com `15px` de deslocamento enquanto o texto utiliza `10px`, criando uma sensação real de camadas flutuantes em alturas distintas.
+
+### 4. Interação Híbrida (Mouse + Touch)
+**Desafio:** Garantir a paridade de experiência entre Desktop e Mobile.
+**Solução:** Implementação de `touchmove` com cálculo de coordenadas baseado em `touches[0]`, permitindo que o efeito de luz e inclinação funcione perfeitamente com o deslizar do dedo.
 
 ## 🎨 Design Decisions
 - **Paleta Tech:** Fundo `--bg-dark` com acentos em `Primary Cyan` para simular luz neon.
-- **HUD Minimalista:** Substituição de elementos genéricos por um sistema de linhas e hexadecimais sutil (`SYS_ACTIVE // 092`).
-- **Feedback Tátil:** Efeito de `scale` e `shadow` dinâmico que acompanha a inclinação do card, reforçando a sensação de objeto físico.
+- **Feedback Tátil:** Reset suave de estados na função `handleLeave`, garantindo que o card retorne à neutralidade visual após a interação.
 
 ---
 
@@ -47,6 +46,8 @@ Isso garante que o card se incline "em direção" ao cursor, aumentando a imers�
 - [x] Suporte completo a dispositivos Mobile (Touch events).
 - [x] Correção de Stacking Context para interatividade dos botões.
 - [x] Implementação de Glare Effect (iluminação dinâmica).
+- [x] **Edge Lighting System (Iluminação de borda reativa).**
+- [x] **Multi-layer Parallax (Profundidade de elementos internos).**
 
 ---
 

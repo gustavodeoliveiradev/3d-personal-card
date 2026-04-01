@@ -40,14 +40,14 @@ body {
     height: 100%;
     width: 100%;
     background: var(--card-glass);
-    border: 1px solid var(--border-glass);
+    border: 1px solid var(--dynamic-border, rgba(255, 255, 255, 0.1));
     border-radius: 20px;
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     /* MANTÉM o clip-path no card */
     clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
     cursor: pointer;
-    transition: transform var(--transition-speed) ease-out, box-shadow var(--transition-speed);
+    transition: transform 0.4s ease-out, border-color 0.3s ease; /* Suaviza a volta da luz */
     transform-style: preserve-3d;
     z-index: 1;
     /* IMPORTANTE: esconde o que transborda para manter as bordas */
@@ -154,6 +154,10 @@ body {
     margin-top: 10px;
     max-width: 85%;
     opacity: 0.8;
+}
+
+.title, .text {
+    transition: transform 0.1s ease-out;
 }
 
 /* Rodapé e Botões - DENTRO do 3D mas SEM transform no container */

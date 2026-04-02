@@ -1,5 +1,7 @@
 const parent = document.querySelector('.parent');
 const card = document.querySelector('.card');
+const viewMoreBtn = document.querySelector('.view-more-button');
+const viewMoreIcon = document.querySelector('.view-more-icon');
 
 function handleMove(e) {
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -34,11 +36,15 @@ function handleMove(e) {
     if (text) text.style.transform = `translate3d(${xPct * 10}px, ${yPct * 10}px, 30px)`;
 
     // --- SUA SOMBRA (Mantida como você gosta) ---
-    const shadowX = xPct * -30;
-    const shadowY = yPct * -30;
+    const shadowX = xPct * -35; // Aumentamos um pouco o deslocamento horizontal
+    const shadowY = yPct * -35; // Aumentamos um pouco o deslocamento vertical
+
+    // O blur também aumenta na inclinação para dar sensação de altura
+    const shadowBlur = 30 + (Math.abs(xPct) + Math.abs(yPct)) * 30;
+    // Aplicamos a sombra principal e o brilho sutil
     card.style.boxShadow = `
-        ${shadowX}px ${shadowY}px 50px rgba(0, 0, 0, 0.5),
-        0 0 20px rgba(0, 242, 255, 0.1)`;
+        ${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.4),
+        0 0 20px rgba(0, 242, 255, 0.05)`;
 
     // --- GLARE (Mantenha igual) ---
     const px = (mouseX / width) * 100;
@@ -48,6 +54,7 @@ function handleMove(e) {
 }
 
 function handleLeave() {
+    card.classList.remove('scanning'); // Desliga o scanner
     card.style.transform = `rotateX(0deg) rotateY(0deg)`;
     card.style.boxShadow = `0 0 0 transparent`;
     // Reseta a borda para o estado inicial (opacidade baixa)
@@ -63,3 +70,20 @@ parent.addEventListener('touchmove', (e) => {
 }, { passive: false });
 
 parent.addEventListener('touchend', handleLeave);
+
+parent.addEventListener('mouseenter', () => {
+    card.classList.add('scanning');
+});
+
+viewMoreBtn.addEventListener('click', () => {
+    // 1. Alterna o estado do card
+    card.classList.toggle('expanded');
+    // 2. Checa o estado para trocar o ícone
+    if (card.classList.contains('expanded')) {
+        viewMoreIcon.classList.replace('fa-angles-down', 'fa-angles-up');
+        viewMoreBtn.textContent = 'View Less'; // Muda o texto também!
+    } else {
+        viewMoreIcon.classList.replace('fa-angles-up', 'fa-angles-down');
+        viewMoreBtn.textContent = 'View More';
+    }
+});

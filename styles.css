@@ -45,9 +45,10 @@ body {
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     /* MANTÉM o clip-path no card */
+    animation: boot-card 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
     cursor: pointer;
-    transition: transform 0.4s ease-out, border-color 0.3s ease;
+    transition: transform 0.4s ease-out, height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
     /* Suaviza a volta da luz */
     transform-style: preserve-3d;
     z-index: 1;
@@ -56,16 +57,101 @@ body {
     -webkit-tap-highlight-color: transparent;
 }
 
+@keyframes boot-card {
+    0% {
+        clip-path: polygon(0 50%, 100% 50%, 100% 50%, 0 50%);
+        opacity: 0;
+        filter: brightness(2);
+        /* Efeito de flash de energia */
+    }
+
+    100% {
+        clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
+        opacity: 1;
+        filter: brightness(1);
+    }
+}
+
 /* Efeito de scanline ou grid de fundo no card */
 .card::before {
     content: "";
     position: absolute;
     inset: 0;
-    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%);
+    width: 100%;
+    background: repeating-linear-gradient(to bottom,
+            rgba(0, 242, 255, 0.5) 0px,
+            rgba(0, 242, 255, 0.5) 1px,
+            transparent 1px,
+            transparent 2px);
+    /* Um degradê radial cria a 'zona' de brilho que segue o scan */
+    -webkit-mask-image: radial-gradient(circle at 50% 50%,
+            black 0%,
+            transparent 70%);
+    mask-image: radial-gradient(circle at 50% 50%,
+            black 0%,
+            transparent 70%);
+    height: 150px;
     background-size: 100% 4px;
-    z-index: 1;
+    z-index: 3;
     pointer-events: none;
-    opacity: 0.2;
+    opacity: 0;
+    /* Adiciona brilho de neon */
+    filter: drop-shadow(0 0 10px var(--primary-cyan));
+}
+
+/* Quando o mouse entra e o JS ativa o scan... */
+.scanning .card::before {
+    /* Sincronizado com o 'scan-move' principal (mesmos tempos e curva) */
+    animation: scanline-glow-move 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    animation-delay: 1s;
+    /* O mesmo delay do scan principal */
+    opacity: 1;
+    /* Torna visível durante a animação */
+}
+
+@keyframes scanline-glow-move {
+
+    /* O brilho deve se alinhar com a posição da barra de scan principal */
+    0% {
+        top: -20%;
+    }
+
+    100% {
+        top: 120%;
+    }
+}
+
+/* Pseudo-elemento dedicado para as scanlines estáticas */
+.card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    /* Linhas escuras sutis */
+    background: repeating-linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 2px);
+    background-size: 100% 4px;
+    /* Isso define a "grossura" total do ciclo */
+    /* Camada acima do vidro, abaixo do texto */
+    z-index: 2;
+    opacity: 0.15;
+    /* Subimos um pouco a opacidade para garantir a visibilidade */
+    pointer-events: none;
+    border-radius: inherit;
+    /* Deixa as linhas um pouco mais nítidas */
+    image-rendering: pixelated;
+}
+
+@keyframes scanline-roll {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 0 100%;
+    }
 }
 
 .glass {
@@ -81,6 +167,44 @@ body {
     transition: all 0.5s ease-in-out;
     pointer-events: none;
     z-index: 2;
+    overflow: hidden;
+}
+
+/* Criando o ruído como um pseudo-elemento do vidro */
+.glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    /* Gerando o ruído via SVG dinâmico */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+    /* Ajuste de Intensidade: 
+       0.03 a 0.05 é o "ponto doce" para ser sutil mas visível */
+    opacity: 0.05;
+    /* Garante que o ruído não mude de escala bruscamente */
+    background-size: 200px 200px;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+    /* Faz o ruído interagir com as cores do card */
+    animation: noise-vibration 0.2s steps(2) infinite;
+    width: 120%;
+    height: 120%;
+    top: -10%;
+    left: -10%;
+}
+
+@keyframes noise-vibration {
+    0% { transform: translate(0, 0); }
+    10% { transform: translate(-1px, -1px); }
+    20% { transform: translate(1px, 1px); }
+    30% { transform: translate(-2px, 0); }
+    40% { transform: translate(2px, -1px); }
+    50% { transform: translate(-1px, 2px); }
+    60% { transform: translate(1px, -2px); }
+    70% { transform: translate(-2px, 1px); }
+    80% { transform: translate(2px, 0); }
+    90% { transform: translate(-1px, -1px); }
+    100% { transform: translate(0, 0); }
 }
 
 .glare {
@@ -110,6 +234,74 @@ body {
     transform: translate3d(0, 0, 40px);
 }
 
+@keyframes hud-flicker {
+
+    0%,
+    10%,
+    100% {
+        opacity: 1;
+    }
+
+    5% {
+        opacity: 0.3;
+    }
+
+    7% {
+        opacity: 1;
+    }
+
+    8% {
+        opacity: 0.1;
+    }
+}
+
+.hud-scan {
+    position: absolute;
+    /* Começa um pouco mais acima para dar tempo do delay */
+    top: -20%;
+    left: 0;
+    width: 100%;
+    /* 1: Linha ultra fina do scan */
+    height: 1px;
+    /* 2: Gradiente estreito e sutil */
+    background: linear-gradient(to right,
+            transparent 10%,
+            rgba(0, 242, 255, 0.4),
+            var(--primary-cyan),
+            rgba(0, 242, 255, 0.4),
+            transparent 90%);
+    /* 3: Brilho pequeno e focado */
+    box-shadow: 0 0 8px var(--primary-cyan);
+    z-index: 4;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* Quando o mouse entra, o JS adiciona essa classe ao card */
+.scanning .hud-scan {
+    /* 4: Animação lenta e espaçada */
+    /* Usamos 'forwards' para ela não reaparecer no final e 
+       o 'delay' para dar um tempo entre as passagens */
+    animation: scan-move 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    animation-delay: 1s;
+    /* Tempo antes da primeira passagem */
+    opacity: 0.5;
+    /* Transparencia */
+}
+
+@keyframes scan-move {
+
+    /* 5: O movimento começa e termina suave */
+    0% {
+        top: -20%;
+    }
+
+    /* Passa pelo card e some lá embaixo antes do infinite reiniciar */
+    100% {
+        top: 120%;
+    }
+}
+
 .hud-line {
     width: 40px;
     height: 2px;
@@ -123,6 +315,12 @@ body {
     font-weight: bold;
     letter-spacing: 1px;
     text-transform: uppercase;
+}
+
+.hud-line,
+.hud-hex {
+    animation: hud-flicker 1.4s ease infinite;
+    /* Faz piscar constante ou use uma vez no boot */
 }
 
 .hud-hex::before {
@@ -180,6 +378,31 @@ body {
     z-index: 10;
 }
 
+.content,
+.hud-container,
+.bottom {
+    opacity: 0;
+    animation: fadeIn 0.5s ease forwards;
+}
+
+.hud-container {
+    animation-delay: 0.8s;
+}
+
+.content {
+    animation-delay: 1s;
+}
+
+.bottom {
+    animation-delay: 1.2s;
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+    }
+}
+
 .social-buttons-container {
     display: flex;
     gap: 12px;
@@ -192,6 +415,7 @@ body {
     border: 1px solid var(--border-glass);
     background: rgba(255, 255, 255, 0.05);
     color: white;
+    text-decoration: none;
     display: grid;
     place-content: center;
     cursor: pointer;
@@ -221,6 +445,7 @@ body {
     text-transform: uppercase;
     /* Aplicar translateZ aqui também pra manter consistência 3D */
     transform: translate3d(0, 0, 60px);
+    user-select: none;
 }
 
 .view-more-button {
@@ -236,7 +461,102 @@ body {
     text-shadow: 0 0 10px var(--primary-cyan);
 }
 
-.view-more:hover .icon {
+/* Estado Normal (Fechado): Ícone desce no hover */
+.view-more:hover .view-more-icon {
     transform: translateY(3px);
-    transition: transform 0.3s ease;
+}
+
+/* Estado Expandido: Ícone sobe no hover */
+.card.expanded .view-more:hover .view-more-icon {
+    transform: translateY(-3px);
+}
+
+.view-more-icon {
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Quando o card for expandido, as barras correm */
+.card.expanded .progress-fill {
+    transform: translateX(0);
+}
+
+.card.expanded {
+    height: 450px;
+}
+
+.card.expanded .view-more-icon {
+    color: var(--primary-cyan);
+    /* Um leve pulo para cima para dar feedback visual */
+    animation: bounce-up 0.5s ease;
+}
+
+@keyframes bounce-up {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-5px);
+    }
+}
+
+.extra-content {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px);
+    transition: all 0.5s ease;
+    padding: 20px;
+}
+
+.card.expanded .extra-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.skill-title {
+    color: var(--primary-cyan);
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    opacity: 0.8;
+}
+
+.skills-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.skill-info {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 600;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(0, 242, 255, 0.1);
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--primary-cyan);
+    box-shadow: 0 0 15px var(--primary-cyan);
+    border-radius: 10px;
+    /* Animação de carregamento ao abrir */
+    transform: translateX(-100%);
+    transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
 }

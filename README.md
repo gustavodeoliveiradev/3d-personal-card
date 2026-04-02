@@ -1,56 +1,54 @@
-# 3D Cyber-Identity Card 🌌
+# 📇 3D Cyber-Identity Card // HUD Interface 🌌
 
-Projeto de interface de alto impacto visual que explora conceitos avançados de **CSS 3D**, **Glassmorphism** e **UX Dinâmica**. O objetivo foi criar um card de identidade que reage fisicamente à interação do usuário, simulando profundidade e reflexos de luz em tempo real.
+![Status](https://img.shields.io/badge/Status-Operational-00f2ff?style=for-the-badge)
+![Dev](https://img.shields.io/badge/Dev-GusDev-black?style=for-the-badge&logo=github)
+![Version](https://img.shields.io/badge/Version-2.1.0-blueviolet?style=for-the-badge)
 
-## 🚀 Demonstração
+Projeto de interface ultra-responsiva focado em **Advanced Glassmorphism** e **audiovisual interactivity**. Desenvolvido por **Gustavo (GusDev)** como uma exploração profunda de manipulação de DOM e renderização visual via CSS3.
 
-✨ **Acesse o projeto online:** [3D Personal Identity Card](https://gustavodeoliveiradev.github.io/3d-personal-card/)
-
----
-
-## 🛠️ Tecnologias e Conceitos
-- **HTML5:** Estrutura semântica com foco em acessibilidade.
-- **CSS3 Moderno:** - `Perspective` & `preserve-3d` para profundidade real.
-  - `Clip-path` para cortes geométricos futuristas.
-  - Custom Properties (Variáveis) para manipulação dinâmica de iluminação.
-- **Vanilla JavaScript:** Lógica matemática para cálculo de eixos e manipulação de estados via CSS Variables.
-- **Glassmorphism:** Efeito de vidro com `backdrop-filter` e bordas orgânicas.
-
-## 🧠 Desafios Técnicos & Soluções (Deep Dive)
-
-### 1. O Problema do "Clique Fantasma" no 3D
-**Desafio:** Elementos decorativos transparentes bloqueavam a interação com os botões sociais no eixo Z.
-**Solução:** Implementação de `pointer-events: none` em camadas visuais e isolamento do `translate3d` nos botões para garantir prioridade de clique no DOM.
-
-### 2. Edge Lighting Dinâmico (Iluminação de Borda)
-**Desafio:** O card parecia "morto" nas extremidades durante a inclinação.
-**Solução:** Criamos uma variável CSS `--dynamic-border` controlada por `Math.abs()` no JS. Isso permite que a borda "acenda" em neon ciano proporcionalmente à intensidade da inclinação, simulando reflexo de luz física nas bordas do vidro.
-
-### 3. Parallax de Camadas Internas
-**Desafio:** Elementos internos (texto e título) movendo-se em bloco único quebravam a ilusão de profundidade.
-**Solução:** Aplicação de multiplicadores de deslocamento diferentes para cada elemento no JS. O título flutua com `15px` de deslocamento enquanto o texto utiliza `10px`, criando uma sensação real de camadas flutuantes em alturas distintas.
-
-### 4. Interação Híbrida (Mouse + Touch)
-**Desafio:** Garantir a paridade de experiência entre Desktop e Mobile.
-**Solução:** Implementação de `touchmove` com cálculo de coordenadas baseado em `touches[0]`, permitindo que o efeito de luz e inclinação funcione perfeitamente com o deslizar do dedo.
-
-## 🎨 Design Decisions
-- **Paleta Tech:** Fundo `--bg-dark` com acentos em `Primary Cyan` para simular luz neon.
-- **Feedback Tátil:** Reset suave de estados na função `handleLeave`, garantindo que o card retorne à neutralidade visual após a interação.
+## 🚀 Demonstração Direta
+✨ **Acesse o terminal online:** [3D Personal Identity Card](https://gustavodeoliveiradev.github.io/3d-personal-card/)
 
 ---
 
-### 📈 Evolução do Projeto
-- [x] Refatoração para design autoral (Cyberpunk).
-- [x] Lógica matemática de rotação 3D.
-- [x] Suporte completo a dispositivos Mobile (Touch events).
-- [x] Correção de Stacking Context para interatividade dos botões.
-- [x] Implementação de Glare Effect (iluminação dinâmica).
-- [x] **Edge Lighting System (Iluminação de borda reativa).**
-- [x] **Multi-layer Parallax (Profundidade de elementos internos).**
+## 🛠️ Stack Tecnológica de Elite
+* **CSS3 Next-Gen:** Uso intensivo de *Custom Properties*, *Grid Layout* e *Animation Chaining*.
+* **Glassmorphism 2.0:** Camadas de desfoque seletivo com sistema de **Edge Lighting** reativo.
+* **HUD Engine:** Implementação de *Scanlines* dinâmicas e ruído fractal (fractal noise) via Data URI SVG.
+* **Vanilla JavaScript (ES6+):** Lógica matemática para rotação 3D, cálculos de profundidade (Parallax) e estados de UI contextual.
 
 ---
 
-Estudando para superar meus limites, sempre um commit por vez. ⚡
+## 🧠 Engenharia do Projeto (Deep Dive)
 
-**Desenvolvido com ☕ por [Gustavo](https://github.com/gustavodeoliveiradev)**
+### 1. Sistema de Iluminação Reativa (Edge Lighting)
+**Desafio:** O card perdia o realismo nas extremidades durante a rotação.
+**Solução:** Implementamos uma variável CSS `--dynamic-border` controlada via JavaScript. Ao calcular o `Math.abs()` da inclinação, a borda "acende" em neon ciano proporcionalmente ao ângulo, simulando o comportamento físico da luz em bordas de vidro.
+
+### 2. Multi-Layer Parallax & Z-Stacking
+**Desafio:** Elementos movendo-se em bloco único quebravam a percepção de profundidade.
+**Solução:** Aplicamos multiplicadores de deslocamento independentes. O título (`Gustavo // Dev`) flutua com `15px`, enquanto o corpo do texto utiliza `10px`, criando uma sensação real de camadas flutuantes em alturas distintas no eixo Z.
+
+### 3. Texturização Digital (CRT & Scanlines)
+**Desafio:** Dar uma estética de "terminal antigo" sem comprometer a legibilidade.
+**Solução:** Camadas de pseudo-elementos (`::before` e `::after`) renderizam *scanlines* de 1px e um ruído estático sutil. A animação de *scan* foi sincronizada para "energizar" as linhas à medida que a barra de luz percorre o card.
+
+---
+
+## 🕹️ Funcionalidades Implementadas
+- [x] **Parallax 3D:** Interação fluida baseada na posição do mouse/touch.
+- [x] **Dynamic Scanline:** Barra de escaneamento com brilho sincronizado.
+- [x] **System Skills // Level:** Barras de progresso neon com preenchimento animado.
+- [x] **Contextual UI:** O ícone de expansão altera direção e texto dinamicamente.
+- [x] **Mobile First:** Suporte completo a eventos de `touchmove` para paridade de experiência.
+
+## 📅 Roadmap de Evolução
+- [ ] **Refatoração Estrutural:** Organização modular do CSS e JS (Scheduled for tomorrow).
+- [ ] **SFX Interface:** Adição de efeitos sonoros sutis para expansão do card.
+- [ ] **Theme Switcher:** Alternância entre perfis "Cyber-Cyan" e "Glitch-Red".
+
+---
+
+> "Estudando para superar meus limites, sempre um commit por vez." ⚡ — *Inspirado no Mindset Gohan.*
+
+**Desenvolvido por [Gustavo (GusDev)](https://github.com/gustavodeoliveiradev)**

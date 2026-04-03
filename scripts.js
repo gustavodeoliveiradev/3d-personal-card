@@ -1,89 +1,196 @@
-const parent = document.querySelector('.parent');
-const card = document.querySelector('.card');
-const viewMoreBtn = document.querySelector('.view-more-button');
-const viewMoreIcon = document.querySelector('.view-more-icon');
+/**
+ * HUD Card 3D - Controller
+ * Performance otimizada: RAF, cache de DOM, throttling implícito
+ */
 
-function handleMove(e) {
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+class HUDCard {
+  constructor() {
+    // Cache de elementos (evita querySelector a cada frame)
+    this.elements = {
+      scene: document.querySelector('.scene'),
+      card: document.getElementById('hudCard'),
+      expandBtn: document.getElementById('expandBtn'),
+      parallaxElements: document.querySelectorAll('[data-parallax]')
+    };
 
-    const { width, height, left, top } = parent.getBoundingClientRect();
+    // Estado
+    this.state = {
+      isExpanded: false,
+      isHovering: false,
+      rafId: null,
+      bounds: null
+    };
 
-    const mouseX = clientX - left;
-    const mouseY = clientY - top;
+    // Configurações
+    this.config = {
+      rotateMax: 25,
+      parallaxStrength: 15,
+      glareSize: 60
+    };
 
-    const xPct = (mouseX / width) - 0.5;
-    const yPct = (mouseY / height) - 0.5;
+    this.init();
+  }
 
-    const rotateX = yPct * -30;
-    const rotateY = xPct * 30;
-    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+  init() {
+    this.bindEvents();
+    this.updateBounds();
+    
+    // Recalcula bounds no resize (com debounce simples)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => this.updateBounds(), 250);
+    });
+  }
 
-    // --- NOVIDADE 1: EDGE LIGHTING ---
-    // Calculamos a intensidade total da inclinação
+  updateBounds() {
+    this.state.bounds = this.elements.scene.getBoundingClientRect();
+  }
+
+  bindEvents() {
+    const { scene, card, expandBtn } = this.elements;
+
+    // Mouse events
+    scene.addEventListener('mouseenter', () => this.onMouseEnter());
+    scene.addEventListener('mousemove', (e) => this.onMouseMove(e));
+    scene.addEventListener('mouseleave', () => this.onMouseLeave());
+
+    // Touch events (otimizados)
+    scene.addEventListener('touchstart', (e) => {
+      this.onMouseEnter();
+      this.onMouseMove(e.touches[0]);
+    }, { passive: true });
+
+    scene.addEventListener('touchmove', (e) => {
+      e.preventDefault(); // Previne scroll enquanto interage com o card
+      this.onMouseMove(e.touches[0]);
+    }, { passive: false });
+
+    scene.addEventListener('touchend', () => this.onMouseLeave());
+
+    // Expand button
+    expandBtn.addEventListener('click', () => this.toggleExpand());
+
+    // Keyboard accessibility
+    expandBtn.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        this.toggleExpand();
+      }
+    });
+  }
+
+  onMouseEnter() {
+    this.state.isHovering = true;
+    this.elements.card.setAttribute('data-scanning', 'true');
+    this.updateBounds(); // Garante bounds atualizados
+  }
+
+  onMouseMove(e) {
+    if (!this.state.isHovering || !this.state.bounds) return;
+
+    // Usa RAF para sincronizar com o refresh rate da tela
+    if (this.state.rafId) return;
+    
+    this.state.rafId = requestAnimationFrame(() => {
+      this.handleTilt(e);
+      this.state.rafId = null;
+    });
+  }
+
+  handleTilt(e) {
+    const { card, parallaxElements } = this.elements;
+    const { bounds } = this.state;
+    const { rotateMax, parallaxStrength } = this.config;
+
+    // Calcula posição relativa do mouse
+    const mouseX = e.clientX - bounds.left;
+    const mouseY = e.clientY - bounds.top;
+
+    // Normaliza (-0.5 a 0.5)
+    const xPct = (mouseX / bounds.width) - 0.5;
+    const yPct = (mouseY / bounds.height) - 0.5;
+
+    // Rotação 3D (invertido para efeito natural)
+    const rotateX = yPct * -rotateMax;
+    const rotateY = xPct * rotateMax;
+
+    // Intensidade para efeitos dinâmicos
     const intensity = Math.max(Math.abs(xPct), Math.abs(yPct));
-    // A borda vai de 0.1 (suave) até 0.6 (brilhante) conforme você inclina
     const borderAlpha = 0.1 + (intensity * 0.5);
+
+    // Aplica transformações
+    card.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
     card.style.setProperty('--dynamic-border', `rgba(0, 242, 255, ${borderAlpha})`);
-
-    // --- NOVIDADE 2: PARALLAX INTERNO ---
-    // Faz o Título e o Texto flutuarem levemente
-    // Eles se movem na mesma direção do mouse (X e Y positivos)
-    const title = document.querySelector('.title');
-    const text = document.querySelector('.text');
-
-    if (title) title.style.transform = `translate3d(${xPct * 10}px, ${yPct * 10}px, 40px)`;
-    if (text) text.style.transform = `translate3d(${xPct * 10}px, ${yPct * 10}px, 30px)`;
-
-    // --- SUA SOMBRA (Mantida como você gosta) ---
-    const shadowX = xPct * -35; // Aumentamos um pouco o deslocamento horizontal
-    const shadowY = yPct * -35; // Aumentamos um pouco o deslocamento vertical
-
-    // O blur também aumenta na inclinação para dar sensação de altura
-    const shadowBlur = 30 + (Math.abs(xPct) + Math.abs(yPct)) * 30;
-    // Aplicamos a sombra principal e o brilho sutil
+    
+    // Sombra dinâmica
+    const shadowX = xPct * -30;
+    const shadowY = yPct * -30;
+    const shadowBlur = 30 + (intensity * 40);
     card.style.boxShadow = `
-        ${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.4),
-        0 0 20px rgba(0, 242, 255, 0.05)`;
+      ${shadowX}px ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, 0.5),
+      0 0 30px rgba(0, 242, 255, ${0.05 + intensity * 0.1})
+    `;
 
-    // --- GLARE (Mantenha igual) ---
-    const px = (mouseX / width) * 100;
-    const py = (mouseY / height) * 100;
-    card.style.setProperty('--mouse-x', `${px}%`);
-    card.style.setProperty('--mouse-y', `${py}%`);
-}
+    // Glare position
+    const glareX = (mouseX / bounds.width) * 100;
+    const glareY = (mouseY / bounds.height) * 100;
+    card.style.setProperty('--mouse-x', `${glareX}%`);
+    card.style.setProperty('--mouse-y', `${glareY}%`);
 
-function handleLeave() {
-    card.classList.remove('scanning'); // Desliga o scanner
-    card.style.transform = `rotateX(0deg) rotateY(0deg)`;
-    card.style.boxShadow = `0 0 0 transparent`;
-    // Reseta a borda para o estado inicial (opacidade baixa)
-    card.style.setProperty('--dynamic-border', `rgba(255, 255, 255, 0.1)`);
-}
+    // Parallax em elementos internos (título, texto)
+    parallaxElements.forEach(el => {
+      const strength = parseFloat(el.dataset.parallax) || 1;
+      const moveX = xPct * parallaxStrength * strength;
+      const moveY = yPct * parallaxStrength * strength;
+      const z = el.classList.contains('hud-card__title') ? 40 : 30;
+      el.style.transform = `translate3d(${moveX}px, ${moveY}px, ${z}px)`;
+    });
+  }
 
-parent.addEventListener('mousemove', handleMove);
-parent.addEventListener('mouseleave', handleLeave);
+  onMouseLeave() {
+    this.state.isHovering = false;
+    this.elements.card.setAttribute('data-scanning', 'false');
+    
+    // Reset suave
+    this.elements.card.style.transform = 'rotateX(0deg) rotateY(0deg)';
+    this.elements.card.style.boxShadow = '0 10px 30px rgba(0, 0, 0, 0.3)';
+    this.elements.card.style.setProperty('--dynamic-border', 'rgba(255, 255, 255, 0.1)');
 
-parent.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    handleMove(e);
-}, { passive: false });
+    // Reset parallax
+    this.elements.parallaxElements.forEach(el => {
+      const z = el.classList.contains('hud-card__title') ? 40 : 30;
+      el.style.transform = `translate3d(0, 0, ${z}px)`;
+    });
+  }
 
-parent.addEventListener('touchend', handleLeave);
+  toggleExpand() {
+    const { card, expandBtn } = this.elements;
+    const icon = expandBtn.querySelector('.expand-btn__icon');
+    const text = expandBtn.querySelector('.expand-btn__text');
+    const extraContent = document.getElementById('extraContent');
 
-parent.addEventListener('mouseenter', () => {
-    card.classList.add('scanning');
-});
+    this.state.isExpanded = !this.state.isExpanded;
 
-viewMoreBtn.addEventListener('click', () => {
-    // 1. Alterna o estado do card
-    card.classList.toggle('expanded');
-    // 2. Checa o estado para trocar o ícone
-    if (card.classList.contains('expanded')) {
-        viewMoreIcon.classList.replace('fa-angles-down', 'fa-angles-up');
-        viewMoreBtn.textContent = 'View Less'; // Muda o texto também!
+    if (this.state.isExpanded) {
+      card.classList.add('hud-card--expanded');
+      expandBtn.setAttribute('aria-expanded', 'true');
+      extraContent.setAttribute('aria-hidden', 'false');
+      text.textContent = 'View Less';
+      icon.classList.replace('fa-angles-down', 'fa-angles-up');
     } else {
-        viewMoreIcon.classList.replace('fa-angles-up', 'fa-angles-down');
-        viewMoreBtn.textContent = 'View More';
+      card.classList.remove('hud-card--expanded');
+      expandBtn.setAttribute('aria-expanded', 'false');
+      extraContent.setAttribute('aria-hidden', 'true');
+      text.textContent = 'View More';
+      icon.classList.replace('fa-angles-up', 'fa-angles-down');
     }
-});
+  }
+}
+
+// Inicializa quando DOM estiver pronto
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => new HUDCard());
+} else {
+  new HUDCard();
+}

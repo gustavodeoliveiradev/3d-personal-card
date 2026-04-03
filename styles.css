@@ -1,68 +1,101 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+/* ============================================
+   HUD CARD 3D - Refatorado
+   Organização: Variáveis → Reset → Componentes → Estados → Media Queries
+   ============================================ */
 
+/* ─── VARIÁVEIS ─── */
 :root {
-    --primary-cyan: #00f2ff;
-    --text-main: #a0a0c0;
-    --bg-dark: #020205;
-    --card-glass: rgba(255, 255, 255, 0.03);
-    --border-glass: rgba(255, 255, 255, 0.1);
-    --transition-speed-faster: 0.1s;
-    --transition-speed: 0.4s;
-    --transition-speed-slow: 0.5s;
+    /* Cores */
+    --color-primary: #00f2ff;
+    --color-primary-rgb: 0, 242, 255;
+    --color-text: #a0a0c0;
+    --color-bg: #020205;
+    --color-surface: rgba(255, 255, 255, 0.03);
+    --color-border: rgba(255, 255, 255, 0.1);
+
+    /* Dimensões */
+    --card-width: 320px;
+    --card-height: 350px;
+    --card-height-expanded: 480px;
+    --border-radius: 20px;
+
+    /* Animações */
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --duration-fast: 0.1s;
+    --duration-normal: 0.4s;
+    --duration-slow: 0.8s;
+
+    /* 3D */
+    --perspective: 1200px;
+    --rotate-max: 25deg;
 }
 
-* {
+/* ─── RESET & BASE ─── */
+*,
+*::before,
+*::after {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: "Poppins", sans-serif;
+}
+
+html {
+    font-family: 'Poppins', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-    height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: radial-gradient(circle at center, #1a1a2e 0%, var(--bg-dark) 100%);
-    overflow: hidden;
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle at center, #1a1a2e 0%, var(--color-bg) 100%);
+    overflow-x: hidden;
 }
 
-/* Container de Perspectiva */
-.parent {
-    width: 320px;
-    height: 350px;
-    perspective: 1200px;
+/* ─── SCENE (Container 3D) ─── */
+.scene {
+    width: var(--card-width);
+    height: var(--card-height);
+    perspective: var(--perspective);
+    /* GPU acceleration */
+    transform: translateZ(0);
+    will-change: transform;
 }
 
-/* O Card Principal - recebe o transform 3D */
-.card {
+/* ─── HUD CARD (Componente Principal) ─── */
+.hud-card {
     position: relative;
-    height: 100%;
     width: 100%;
-    background: var(--card-glass);
-    border: 1px solid var(--dynamic-border, rgba(255, 255, 255, 0.1));
-    border-radius: 20px;
+    height: 100%;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius);
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
-    /* MANTÉM o clip-path no card */
-    animation: boot-card 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     clip-path: polygon(0 0, 85% 0, 100% 15%, 100% 100%, 0 100%);
-    cursor: pointer;
-    transition: transform 0.4s ease-out, height 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    /* Suaviza a volta da luz */
     transform-style: preserve-3d;
-    z-index: 1;
-    /* IMPORTANTE: esconde o que transborda para manter as bordas */
+    cursor: pointer;
     overflow: hidden;
-    -webkit-tap-highlight-color: transparent;
+    isolation: isolate;
+
+    /* Animação de entrada */
+    animation: card-boot var(--duration-slow) var(--ease-out-expo) forwards;
+
+    /* Transições suaves */
+    transition:
+        transform var(--duration-normal) ease-out,
+        height var(--duration-normal) var(--ease-smooth),
+        box-shadow var(--duration-normal) ease-out,
+        border-color var(--duration-fast) ease-out;
 }
 
-@keyframes boot-card {
+@keyframes card-boot {
     0% {
         clip-path: polygon(0 50%, 100% 50%, 100% 50%, 0 50%);
         opacity: 0;
         filter: brightness(2);
-        /* Efeito de flash de energia */
     }
 
     100% {
@@ -72,46 +105,48 @@ body {
     }
 }
 
-/* Efeito de scanline ou grid de fundo no card */
-.card::before {
-    content: "";
+/* ─── CAMADAS VISUAIS ─── */
+
+/* Scanlines estáticas */
+.hud-card__scanlines {
     position: absolute;
     inset: 0;
-    width: 100%;
     background: repeating-linear-gradient(to bottom,
-            rgba(0, 242, 255, 0.5) 0px,
-            rgba(0, 242, 255, 0.5) 1px,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 1px,
             transparent 1px,
-            transparent 2px);
-    /* Um degradê radial cria a 'zona' de brilho que segue o scan */
-    -webkit-mask-image: radial-gradient(circle at 50% 50%,
-            black 0%,
-            transparent 70%);
-    mask-image: radial-gradient(circle at 50% 50%,
-            black 0%,
-            transparent 70%);
-    height: 150px;
-    background-size: 100% 4px;
-    z-index: 3;
+            transparent 4px);
+    opacity: 0.15;
     pointer-events: none;
+    z-index: 1;
+}
+
+/* Scanner animado (só ativa no hover via JS) */
+.hud-card__scanner {
+    position: absolute;
+    top: -20%;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(to right,
+            transparent 10%,
+            rgba(var(--color-primary-rgb), 0.6),
+            var(--color-primary),
+            rgba(var(--color-primary-rgb), 0.6),
+            transparent 90%);
+    box-shadow: 0 0 15px var(--color-primary);
     opacity: 0;
-    /* Adiciona brilho de neon */
-    filter: drop-shadow(0 0 10px var(--primary-cyan));
+    pointer-events: none;
+    z-index: 4;
 }
 
-/* Quando o mouse entra e o JS ativa o scan... */
-.scanning .card::before {
-    /* Sincronizado com o 'scan-move' principal (mesmos tempos e curva) */
-    animation: scanline-glow-move 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    animation-delay: 1s;
-    /* O mesmo delay do scan principal */
-    opacity: 1;
-    /* Torna visível durante a animação */
+.hud-card[data-scanning="true"] .hud-card__scanner {
+    animation: scanner-move 3s var(--ease-smooth) infinite;
+    animation-delay: 0.5s;
+    opacity: 0.8;
 }
 
-@keyframes scanline-glow-move {
-
-    /* O brilho deve se alinhar com a posição da barra de scan principal */
+@keyframes scanner-move {
     0% {
         top: -20%;
     }
@@ -121,117 +156,106 @@ body {
     }
 }
 
-/* Pseudo-elemento dedicado para as scanlines estáticas */
-.card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    /* Linhas escuras sutis */
-    background: repeating-linear-gradient(to bottom,
-            rgba(0, 0, 0, 0.15) 0px,
-            rgba(0, 0, 0, 0.15) 1px,
-            transparent 1px,
-            transparent 2px);
-    background-size: 100% 4px;
-    /* Isso define a "grossura" total do ciclo */
-    /* Camada acima do vidro, abaixo do texto */
-    z-index: 2;
-    opacity: 0.15;
-    /* Subimos um pouco a opacidade para garantir a visibilidade */
-    pointer-events: none;
-    border-radius: inherit;
-    /* Deixa as linhas um pouco mais nítidas */
-    image-rendering: pixelated;
-}
-
-@keyframes scanline-roll {
-    from {
-        background-position: 0 0;
-    }
-
-    to {
-        background-position: 0 100%;
-    }
-}
-
-.glass {
+/* Efeito de vidro com noise */
+.hud-card__glass {
     position: absolute;
     inset: 8px;
     border-radius: 55px;
     border-top-right-radius: 100%;
     border-left: 1px solid rgba(255, 255, 255, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    background: linear-gradient(0deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-    transform-style: preserve-3d;
-    transform: translate3d(0, 0, 20px);
-    transition: all 0.5s ease-in-out;
+    background: linear-gradient(0deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            rgba(255, 255, 255, 0.05) 100%);
+    transform: translateZ(20px);
     pointer-events: none;
     z-index: 2;
     overflow: hidden;
 }
 
-/* Criando o ruído como um pseudo-elemento do vidro */
-.glass::before {
+/* Noise texture via SVG data URI */
+.hud-card__glass::before {
     content: "";
     position: absolute;
-    inset: 0;
-    z-index: 1;
-    /* Gerando o ruído via SVG dinâmico */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    /* Ajuste de Intensidade: 
-       0.03 a 0.05 é o "ponto doce" para ser sutil mas visível */
-    opacity: 0.05;
-    /* Garante que o ruído não mude de escala bruscamente */
-    background-size: 200px 200px;
-    pointer-events: none;
-    mix-blend-mode: overlay;
-    /* Faz o ruído interagir com as cores do card */
-    animation: noise-vibration 0.2s steps(2) infinite;
+    inset: -10%;
     width: 120%;
     height: 120%;
-    top: -10%;
-    left: -10%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    opacity: 0.04;
+    mix-blend-mode: overlay;
+    animation: noise-shake 0.2s steps(2) infinite;
+    pointer-events: none;
 }
 
-@keyframes noise-vibration {
-    0% { transform: translate(0, 0); }
-    10% { transform: translate(-1px, -1px); }
-    20% { transform: translate(1px, 1px); }
-    30% { transform: translate(-2px, 0); }
-    40% { transform: translate(2px, -1px); }
-    50% { transform: translate(-1px, 2px); }
-    60% { transform: translate(1px, -2px); }
-    70% { transform: translate(-2px, 1px); }
-    80% { transform: translate(2px, 0); }
-    90% { transform: translate(-1px, -1px); }
-    100% { transform: translate(0, 0); }
+@keyframes noise-shake {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    25% {
+        transform: translate(-1px, 1px);
+    }
+
+    50% {
+        transform: translate(1px, -1px);
+    }
+
+    75% {
+        transform: translate(-1px, -1px);
+    }
 }
 
-.glare {
+/* Glare dinâmico */
+.hud-card__glare {
     position: absolute;
     inset: 0;
-    background: radial-gradient(circle at var(--mouse-x) var(--mouse-y), rgba(255, 255, 255, 0.15) 0%, transparent 60%);
+    background: radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 60%);
     opacity: 0;
-    transition: opacity 0.3s;
-    z-index: 2;
+    transition: opacity var(--duration-normal);
     pointer-events: none;
+    z-index: 3;
     border-radius: inherit;
 }
 
-.parent:hover .glare {
+.scene:hover .hud-card__glare {
     opacity: 1;
 }
 
-/* HUD Redesenhado (Mais sutil) */
-.hud-container {
+/* ─── HEADER / HUD ─── */
+.hud-card__header {
     position: absolute;
     top: 15px;
     right: 25px;
+    transform: translateZ(40px);
+    z-index: 5;
+}
+
+.hud-indicator {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     gap: 5px;
-    transform: translate3d(0, 0, 40px);
+}
+
+.hud-indicator__line {
+    width: 40px;
+    height: 2px;
+    background: var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary);
+    animation: hud-flicker 2s ease infinite;
+}
+
+.hud-indicator__text {
+    font-size: 8px;
+    color: var(--color-primary);
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    animation: hud-flicker 2s ease infinite 0.1s;
 }
 
 @keyframes hud-flicker {
@@ -255,238 +279,163 @@ body {
     }
 }
 
-.hud-scan {
-    position: absolute;
-    /* Começa um pouco mais acima para dar tempo do delay */
-    top: -20%;
-    left: 0;
-    width: 100%;
-    /* 1: Linha ultra fina do scan */
-    height: 1px;
-    /* 2: Gradiente estreito e sutil */
-    background: linear-gradient(to right,
-            transparent 10%,
-            rgba(0, 242, 255, 0.4),
-            var(--primary-cyan),
-            rgba(0, 242, 255, 0.4),
-            transparent 90%);
-    /* 3: Brilho pequeno e focado */
-    box-shadow: 0 0 8px var(--primary-cyan);
-    z-index: 4;
-    opacity: 0;
-    pointer-events: none;
-}
-
-/* Quando o mouse entra, o JS adiciona essa classe ao card */
-.scanning .hud-scan {
-    /* 4: Animação lenta e espaçada */
-    /* Usamos 'forwards' para ela não reaparecer no final e 
-       o 'delay' para dar um tempo entre as passagens */
-    animation: scan-move 4s cubic-bezier(0.5, 0, 0.5, 1) infinite;
-    animation-delay: 1s;
-    /* Tempo antes da primeira passagem */
-    opacity: 0.5;
-    /* Transparencia */
-}
-
-@keyframes scan-move {
-
-    /* 5: O movimento começa e termina suave */
-    0% {
-        top: -20%;
-    }
-
-    /* Passa pelo card e some lá embaixo antes do infinite reiniciar */
-    100% {
-        top: 120%;
-    }
-}
-
-.hud-line {
-    width: 40px;
-    height: 2px;
-    background: var(--primary-cyan);
-    box-shadow: 0 0 10px var(--primary-cyan);
-}
-
-.hud-hex {
-    font-size: 8px;
-    color: var(--primary-cyan);
-    font-weight: bold;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.hud-line,
-.hud-hex {
-    animation: hud-flicker 1.4s ease infinite;
-    /* Faz piscar constante ou use uma vez no boot */
-}
-
-.hud-hex::before {
-    content: "SYS_ACTIVE // 092";
-}
-
-/* Conteúdo Central */
-.content {
+/* ─── CONTEÚDO ─── */
+.hud-card__content {
     padding: 100px 30px 0;
-    transform-style: preserve-3d;
-    pointer-events: none;
-    transform: translate3d(0, 0, 30px);
+    transform: translateZ(30px);
     z-index: 3;
 }
 
-.content .title {
-    display: block;
-    color: var(--primary-cyan);
+.hud-card__title {
+    color: var(--color-primary);
+    font-size: 22px;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
-    font-weight: 700;
-    font-size: 22px;
     margin-bottom: 10px;
-    user-select: none;
+    line-height: 1.2;
+    /* O parallax é aplicado via JS, não aqui */
+    transition: transform var(--duration-fast) ease-out;
 }
 
-.content .text {
-    display: block;
-    color: var(--text-main);
-    line-height: 1.6;
+.hud-card__description {
+    color: var(--color-text);
     font-size: 14px;
-    margin-top: 10px;
+    line-height: 1.6;
     max-width: 85%;
-    opacity: 0.8;
-    user-select: none;
+    opacity: 0.9;
+    transition: transform var(--duration-fast) ease-out;
 }
 
-.title,
-.text {
-    transition: transform 0.1s ease-out;
-}
-
-/* Rodapé e Botões - DENTRO do 3D mas SEM transform no container */
-.bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+/* ─── FOOTER ─── */
+.hud-card__footer {
     position: absolute;
     bottom: 25px;
     left: 25px;
     right: 25px;
-    padding: 10px 12px;
-    transform-style: preserve-3d;
-    /* REMOVIDO: transform: translate3d(0, 0, 60px); */
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transform: translateZ(50px);
     z-index: 10;
 }
 
-.content,
-.hud-container,
-.bottom {
-    opacity: 0;
-    animation: fadeIn 0.5s ease forwards;
-}
-
-.hud-container {
-    animation-delay: 0.8s;
-}
-
-.content {
-    animation-delay: 1s;
-}
-
-.bottom {
-    animation-delay: 1.2s;
-}
-
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
-}
-
-.social-buttons-container {
+/* Social Links */
+.social-links {
     display: flex;
     gap: 12px;
 }
 
-.social-button {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    border: 1px solid var(--border-glass);
-    background: rgba(255, 255, 255, 0.05);
-    color: white;
-    text-decoration: none;
+.social-links__btn {
+    width: 36px;
+    height: 36px;
     display: grid;
-    place-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    place-items: center;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+    text-decoration: none;
+    font-size: 14px;
+    transform: translateZ(60px);
+    transition: all var(--duration-normal) ease;
     position: relative;
-    z-index: 15;
-    transform-style: preserve-3d;
-    /* APLICADO AQUI: traz cada botão pra frente individualmente */
-    transform: translate3d(0, 0, 60px);
+    overflow: hidden;
 }
 
-.social-button:hover {
-    background: var(--primary-cyan);
-    color: var(--bg-dark);
-    box-shadow: 0 0 15px var(--primary-cyan);
-    transform: translate3d(0, 0, 70px) scale(1.1);
-    /* Z maior no hover */
+.social-links__btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--color-primary);
+    transform: scale(0);
+    transition: transform var(--duration-normal) var(--ease-out-expo);
+    border-radius: inherit;
+    z-index: -1;
 }
 
-.view-more {
+.social-links__btn:hover,
+.social-links__btn:focus-visible {
+    color: var(--color-bg);
+    transform: translateZ(70px) scale(1.1);
+    box-shadow: 0 0 20px rgba(var(--color-primary-rgb), 0.5);
+    border-color: var(--color-primary);
+}
+
+.social-links__btn:hover::before,
+.social-links__btn:focus-visible::before {
+    transform: scale(1);
+}
+
+.social-links__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Expand Button */
+.expand-btn {
     display: flex;
     align-items: center;
-    gap: 5px;
-    color: var(--primary-cyan);
+    gap: 8px;
+    background: none;
+    border: none;
+    color: var(--color-primary);
+    font-family: inherit;
     font-size: 11px;
     font-weight: 600;
     text-transform: uppercase;
-    /* Aplicar translateZ aqui também pra manter consistência 3D */
-    transform: translate3d(0, 0, 60px);
-    user-select: none;
-}
-
-.view-more-button {
-    background: none;
-    border: none;
-    color: inherit;
-    font: inherit;
+    letter-spacing: 0.5px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transform: translateZ(60px);
+    padding: 8px;
+    transition: all var(--duration-normal) ease;
+    position: relative;
 }
 
-.view-more-button:hover {
-    text-shadow: 0 0 10px var(--primary-cyan);
+.expand-btn:hover {
+    text-shadow: 0 0 10px var(--color-primary);
 }
 
-/* Estado Normal (Fechado): Ícone desce no hover */
-.view-more:hover .view-more-icon {
+.expand-btn__icon {
+    transition: transform var(--duration-normal) var(--ease-out-expo);
+}
+
+/* Estado normal: ícone desce no hover */
+.expand-btn:hover .expand-btn__icon {
     transform: translateY(3px);
 }
 
-/* Estado Expandido: Ícone sobe no hover */
-.card.expanded .view-more:hover .view-more-icon {
+/* ─── CONTEÚDO EXTRA (EXPANDIDO) ─── */
+.hud-card__extra {
+    position: absolute;
+    bottom: 80px;
+    left: 0;
+    right: 0;
+    padding: 0 25px;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(20px) translateZ(30px);
+    transition: all var(--duration-normal) var(--ease-smooth);
+    z-index: 3;
+}
+
+.hud-card--expanded .hud-card__extra {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) translateZ(30px);
+}
+
+/* Estado expandido do card */
+.hud-card--expanded {
+    height: var(--card-height-expanded);
+}
+
+/* Quando expandido, ícone sobe no hover */
+.hud-card--expanded .expand-btn:hover .expand-btn__icon {
     transform: translateY(-3px);
 }
 
-.view-more-icon {
-    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-/* Quando o card for expandido, as barras correm */
-.card.expanded .progress-fill {
-    transform: translateX(0);
-}
-
-.card.expanded {
-    height: 450px;
-}
-
-.card.expanded .view-more-icon {
-    color: var(--primary-cyan);
-    /* Um leve pulo para cima para dar feedback visual */
+.hud-card--expanded .expand-btn__icon {
     animation: bounce-up 0.5s ease;
 }
 
@@ -502,61 +451,119 @@ body {
     }
 }
 
-.extra-content {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(20px);
-    transition: all 0.5s ease;
-    padding: 20px;
-}
-
-.card.expanded .extra-content {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.skill-title {
-    color: var(--primary-cyan);
+/* Skills */
+.skills__title {
+    color: var(--color-primary);
     font-size: 12px;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 2px;
     margin-bottom: 15px;
     opacity: 0.8;
 }
 
-.skills-grid {
+.skills__list {
+    list-style: none;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 12px;
 }
 
-.skill-info {
+.skill-item__info {
     display: flex;
     justify-content: space-between;
-    color: var(--text-main);
+    color: var(--color-text);
     font-size: 11px;
     font-weight: 600;
-    margin-bottom: 5px;
     text-transform: uppercase;
+    margin-bottom: 4px;
 }
 
-.progress-bar {
+.skill-item__bar {
     width: 100%;
     height: 6px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 10px;
     overflow: hidden;
-    position: relative;
-    border: 1px solid rgba(0, 242, 255, 0.1);
+    border: 1px solid rgba(var(--color-primary-rgb), 0.1);
 }
 
-.progress-fill {
+.skill-item__fill {
     height: 100%;
-    background: var(--primary-cyan);
-    box-shadow: 0 0 15px var(--primary-cyan);
-    border-radius: 10px;
-    /* Animação de carregamento ao abrir */
+    width: var(--skill-level);
+    background: var(--color-primary);
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.5);
+    border-radius: inherit;
     transform: translateX(-100%);
-    transition: transform 1.5s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: transform 1.5s var(--ease-out-expo);
+}
+
+/* Animação das barras quando expande */
+.hud-card--expanded .skill-item__fill {
+    transform: translateX(0);
+}
+
+/* ─── ANIMAÇÕES DE ENTRADA ─── */
+.hud-card__header,
+.hud-card__content,
+.hud-card__footer {
+    opacity: 0;
+    animation: fade-in 0.5s ease forwards;
+}
+
+.hud-card__header {
+    animation-delay: 0.6s;
+}
+
+.hud-card__content {
+    animation-delay: 0.8s;
+}
+
+.hud-card__footer {
+    animation-delay: 1s;
+}
+
+@keyframes fade-in {
+    to {
+        opacity: 1;
+    }
+}
+
+/* ─── RESPONSIVIDADE ─── */
+@media (max-width: 480px) {
+    :root {
+        --card-width: 300px;
+        --card-height: 320px;
+        --card-height-expanded: 450px;
+    }
+
+    .hud-card__content {
+        padding-top: 80px;
+    }
+
+    .hud-card__title {
+        font-size: 20px;
+    }
+}
+
+/* ─── ACESSIBILIDADE ─── */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+
+    .hud-card {
+        transform: none !important;
+    }
+}
+
+/* Focus visible para navegação por teclado */
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
 }

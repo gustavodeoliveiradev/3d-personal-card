@@ -1,9 +1,11 @@
 /* ============================================
-   HUD CARD 3D - Refatorado
-   Organização: Variáveis → Reset → Componentes → Estados → Media Queries
+   HUD CARD 3D - CSS COMPLETO v2.1.0
+   Organização: Variáveis → Reset → Base → Componentes → Estados → Utilitários → Responsividade → Acessibilidade
    ============================================ */
 
-/* ─── VARIÁVEIS ─── */
+/* ───────────────────────────────────────────
+   1. VARIÁVEIS GLOBAIS (Design Tokens)
+   ─────────────────────────────────────────── */
 :root {
     /* Cores */
     --color-primary: #00f2ff;
@@ -31,7 +33,9 @@
     --rotate-max: 25deg;
 }
 
-/* ─── RESET & BASE ─── */
+/* ───────────────────────────────────────────
+   2. RESET & BASE
+   ─────────────────────────────────────────── */
 *,
 *::before,
 *::after {
@@ -54,17 +58,58 @@ body {
     overflow-x: hidden;
 }
 
-/* ─── SCENE (Container 3D) ─── */
+/* ───────────────────────────────────────────
+   3. PREVENÇÃO DE SELEÇÃO (UX Mobile/Desktop)
+   ─────────────────────────────────────────── */
+
+/* Desabilita seleção no card durante interação 3D */
+.hud-card,
+.hud-card * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+
+    /* Remove menu de contexto iOS */
+    -webkit-touch-callout: none;
+
+    /* Remove destaque azul do toque mobile */
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Mantém seleção em inputs editáveis (acessibilidade) */
+.hud-card input,
+.hud-card textarea,
+.hud-card [contenteditable="true"] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+/* Previne arrastar imagens/links (efeito fantasma) */
+.hud-card img,
+.hud-card a {
+    -webkit-user-drag: none;
+    -khtml-user-drag: none;
+    -moz-user-drag: none;
+    -o-user-drag: none;
+}
+
+/* ───────────────────────────────────────────
+   4. SCENE (Container 3D)
+   ─────────────────────────────────────────── */
 .scene {
     width: var(--card-width);
     height: var(--card-height);
     perspective: var(--perspective);
-    /* GPU acceleration */
     transform: translateZ(0);
     will-change: transform;
 }
 
-/* ─── HUD CARD (Componente Principal) ─── */
+/* ───────────────────────────────────────────
+   5. HUD CARD (Componente Principal)
+   ─────────────────────────────────────────── */
 .hud-card {
     position: relative;
     width: 100%;
@@ -105,7 +150,9 @@ body {
     }
 }
 
-/* ─── CAMADAS VISUAIS ─── */
+/* ───────────────────────────────────────────
+   6. CAMADAS VISUAIS (Z-Stacking)
+   ─────────────────────────────────────────── */
 
 /* Scanlines estáticas */
 .hud-card__scanlines {
@@ -121,7 +168,7 @@ body {
     z-index: 1;
 }
 
-/* Scanner animado (só ativa no hover via JS) */
+/* Scanner animado */
 .hud-card__scanner {
     position: absolute;
     top: -20%;
@@ -173,7 +220,7 @@ body {
     overflow: hidden;
 }
 
-/* Noise texture via SVG data URI */
+/* Noise texture via SVG */
 .hud-card__glass::before {
     content: "";
     position: absolute;
@@ -225,7 +272,9 @@ body {
     opacity: 1;
 }
 
-/* ─── HEADER / HUD ─── */
+/* ───────────────────────────────────────────
+   7. HEADER / HUD
+   ─────────────────────────────────────────── */
 .hud-card__header {
     position: absolute;
     top: 15px;
@@ -279,7 +328,9 @@ body {
     }
 }
 
-/* ─── CONTEÚDO ─── */
+/* ───────────────────────────────────────────
+   8. CONTEÚDO PRINCIPAL
+   ─────────────────────────────────────────── */
 .hud-card__content {
     padding: 100px 30px 0;
     transform: translateZ(30px);
@@ -294,7 +345,6 @@ body {
     letter-spacing: 1px;
     margin-bottom: 10px;
     line-height: 1.2;
-    /* O parallax é aplicado via JS, não aqui */
     transition: transform var(--duration-fast) ease-out;
 }
 
@@ -307,7 +357,9 @@ body {
     transition: transform var(--duration-fast) ease-out;
 }
 
-/* ─── FOOTER ─── */
+/* ───────────────────────────────────────────
+   9. FOOTER / AÇÕES
+   ─────────────────────────────────────────── */
 .hud-card__footer {
     position: absolute;
     bottom: 25px;
@@ -341,6 +393,8 @@ body {
     transition: all var(--duration-normal) ease;
     position: relative;
     overflow: hidden;
+    /* Remove magnifying glass iOS */
+    -webkit-touch-callout: none;
 }
 
 .social-links__btn::before {
@@ -390,6 +444,8 @@ body {
     padding: 8px;
     transition: all var(--duration-normal) ease;
     position: relative;
+    /* Remove magnifying glass iOS */
+    -webkit-touch-callout: none;
 }
 
 .expand-btn:hover {
@@ -405,7 +461,9 @@ body {
     transform: translateY(3px);
 }
 
-/* ─── CONTEÚDO EXTRA (EXPANDIDO) ─── */
+/* ───────────────────────────────────────────
+   10. CONTEÚDO EXTRA (EXPANDIDO)
+   ─────────────────────────────────────────── */
 .hud-card__extra {
     position: absolute;
     bottom: 80px;
@@ -419,15 +477,14 @@ body {
     z-index: 3;
 }
 
+.hud-card--expanded {
+    height: var(--card-height-expanded);
+}
+
 .hud-card--expanded .hud-card__extra {
     opacity: 1;
     visibility: visible;
     transform: translateY(0) translateZ(30px);
-}
-
-/* Estado expandido do card */
-.hud-card--expanded {
-    height: var(--card-height-expanded);
 }
 
 /* Quando expandido, ícone sobe no hover */
@@ -498,12 +555,13 @@ body {
     transition: transform 1.5s var(--ease-out-expo);
 }
 
-/* Animação das barras quando expande */
 .hud-card--expanded .skill-item__fill {
     transform: translateX(0);
 }
 
-/* ─── ANIMAÇÕES DE ENTRADA ─── */
+/* ───────────────────────────────────────────
+   11. ANIMAÇÕES DE ENTRADA
+   ─────────────────────────────────────────── */
 .hud-card__header,
 .hud-card__content,
 .hud-card__footer {
@@ -529,7 +587,9 @@ body {
     }
 }
 
-/* ─── RESPONSIVIDADE ─── */
+/* ───────────────────────────────────────────
+   12. RESPONSIVIDADE
+   ─────────────────────────────────────────── */
 @media (max-width: 480px) {
     :root {
         --card-width: 300px;
@@ -546,7 +606,11 @@ body {
     }
 }
 
-/* ─── ACESSIBILIDADE ─── */
+/* ───────────────────────────────────────────
+   13. ACESSIBILIDADE
+   ─────────────────────────────────────────── */
+
+/* Reduced Motion */
 @media (prefers-reduced-motion: reduce) {
 
     *,
@@ -562,8 +626,23 @@ body {
     }
 }
 
-/* Focus visible para navegação por teclado */
+/* Focus Visible (Keyboard Navigation) */
 :focus-visible {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
+}
+
+/* Remove outline padrão, mantém focus-visible */
+.hud-card *:focus {
+    outline: none;
+}
+
+.hud-card *:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+/* Previne scroll bounce no iOS quando expandido */
+.hud-card--expanded {
+    overscroll-behavior: contain;
 }
